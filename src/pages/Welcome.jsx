@@ -1,44 +1,75 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { Button, Input } from '../components';
+import { Button, Input } from "../components";
 
 export const Welcome = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [isDisabled, setIsDisabled] = useState(true);
+  const [userData, setUserData] = useState({ name: "", phone: "" });
 
-  const [isDisabled, setIsDisabled] = useState(true)
+  const onNameInputHandler = (e) => {
+    const value = e.target.value.trim();
 
-  const onNameInputHandler = e => {
-    const value = e.target.value.trim()
+    setUserData((prev) => ({
+      ...prev,
+      name: value,
+    }));
 
-    // проверка чтобы количество символов в имени было больше или равно 3
-    if (value.length >= 3) {
-      setIsDisabled(false)
-      return
+    checkFormValidity(value, userData.phone);
+  };
+
+  const onPhoneInputHandler = (e) => {
+    const value = e.target.value.trim();
+
+    // Новое регулярное выражение для строгой проверки номера
+    const phonePattern = /^\+998\s?\d{2}\s?\d{3}\s?\d{4}$/;
+    const isValidPhone = phonePattern.test(value);
+
+    setUserData((prev) => ({
+      ...prev,
+      phone: isValidPhone ? value : "",
+    }));
+
+    checkFormValidity(userData.name, isValidPhone ? value : "");
+  };
+
+  const checkFormValidity = (name, phone) => {
+    if (name.length >= 3 && phone) {
+      setIsDisabled(false);
+    } else {
+      setIsDisabled(true);
     }
+  };
 
-    if (value.length < 3) {
-      setIsDisabled(true)
-      return
-    }
-  }
-
-  // Функция обработчик для ввода телефона должна быть здесь
-  // Функция обработчик для onSubmit должна быть здесь
+  const onSubmitHandler = (e) => {
+    e.preventDefault();
+    navigate("/step/1");
+  };
 
   return (
     <div className="container">
       <div className="wrapper">
         <div className="welcome">
           <h1>Добро пожаловать в квиз от лучшего учебного центра</h1>
-          {/* Вынести функцию из JSX */}
-          <form className="welcome__form" onSubmit={(e) => {
-            e.preventDefault()
-            navigate('/step/1')
-          }}>
-            <Input label="Ваше имя" type="text" name="username" id="username" placeholder="Ваш ответ" onInput={onNameInputHandler} />
-            {/* <Input label="Ваш номер" type="tel" name="phone" id="phone" placeholder="+998 9- --- -- -- " pattern="^(?:\+998)?(?:\d{2})?(?:\d{7})$" ref={telRef} /> */}
-            <Button type={'submit'} id={'next-btn'} text='Далее' disabled={isDisabled} />
+          <form className="welcome__form" onSubmit={onSubmitHandler}>
+            <Input
+              label="Ваше имя"
+              type="text"
+              name="username"
+              id="username"
+              placeholder="Ваш ответ"
+              onInput={onNameInputHandler}
+            />
+            <Input
+              label="Ваш номер"
+              type="tel"
+              name="phone"
+              id="phone"
+              placeholder="+998 XX XXX XXXX"
+              onInput={onPhoneInputHandler}
+            />
+            <Button type="submit" id="next-btn" text="Далее" disabled={isDisabled} />
           </form>
         </div>
       </div>
